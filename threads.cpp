@@ -19,7 +19,8 @@
 #include <semaphore.h>
 #include <signal.h>
 #include <unordered_map>
-
+#include <iostream>
+using namespace std;
 
 
 /* 
@@ -155,10 +156,11 @@ int sem_destroy (sem_t *sem) {
     bool locked_state = is_locked;
     if (!locked_state)
         lock();
-    
+    //cout << "sem_destroy begin" << endl;
     delete (__sem_t*)sem->__align;
-    delete sem;
-    
+    //delete sem;
+    //cout << "sem_destroy end" << endl;
+
     if (!locked_state)
         unlock();
     
@@ -369,7 +371,9 @@ void pthread_exit(void *value_ptr) {
 		if(setjmp(main_tcb.jb)) {
 			/* garbage collector's stack should be freed by OS upon exit;
 			   We'll free anyways, for completeness */
+			//cout << "pthread_exit begin" << endl;
 			free((void*) garbage_collector.stack);
+			//cout << "pthread_exit end" << endl;
 			exit(0);
 		} 
 	}
@@ -459,7 +463,9 @@ void the_nowhere_zone(void) {
 	/* free stack memory of exiting thread 
 	   Note: if this is main thread, we're OK since
 	   free(NULL) works */ 
+	//cout << "the_nowhere_zone begin" << endl;
 	free((void*) thread_pool.front()->stack);
+	//cout << "the_nowhere_zone end" << endl;
 	thread_pool.front()->stack = NULL;
 
 	/* Don't schedule the thread anymore */
