@@ -174,13 +174,13 @@ int sem_wait (sem_t *sem) {
         
         lock();
         
-        sem_is_zero = (((__sem_t*)sem->__align)->id) == 0);
+        sem_is_zero = ((((__sem_t*)sem->__align)->id) == 0);
     
         if (sem_is_zero)
             unlock();
     } while (sem_is_zero);
     
-    ((__sem_t*)sem->__align)->id) = ((__sem_t*)sem->__align)->id - 1;
+    ((__sem_t*)sem->__align)->id = ((__sem_t*)sem->__align)->id - 1;
     unlock();
     return 0;
 }
@@ -305,13 +305,13 @@ int pthread_create(pthread_t *restrict_thread, const pthread_attr_t *restrict_at
 	*(int*)(tmp_tcb->stack+32759) = (int)pthread_exit_wrapper;
 	
 	/* initialize jump buf structure to be 0, just in case there's garbage */
-	memset(&tmp_tcb.jb,0,sizeof(tmp_tcb->jb));
+	memset(&tmp_tcb->jb,0,sizeof(tmp_tcb->jb));
 	/* the jmp buffer has a stored signal mask; zero it out just in case */
 	sigemptyset(&tmp_tcb->jb->__saved_mask);
 	
 	/* modify the stack pointer and instruction pointer for this thread's
 	   jmp buffer. don't forget to mangle! */
-	tmp_tcb->jb->__jmpbuf[4] = ptr_mangle((uintptr_t)(tmp_tcb.stack+32759));
+	tmp_tcb->jb->__jmpbuf[4] = ptr_mangle((uintptr_t)(tmp_tcb->stack+32759));
 	tmp_tcb->jb->__jmpbuf[5] = ptr_mangle((uintptr_t)start_routine);
 
 	/* new thread is ready to be scheduled! */
@@ -358,9 +358,9 @@ void pthread_exit(void *value_ptr) {
 	/* stop the timer so we don't get interrupted */
 	STOP_TIMER;
 
-    tcb_t* tmp_tcb = thread_map [pthread_exit];
-    tmp_tcb->exit_status = value_ptr;
-    tmp_tcb->is_terminated = true;
+    	tcb_t* tmp_tcb = thread_map [thread_pool.front()->id];
+   	tmp_tcb->exit_status = value_ptr;
+    	tmp_tcb->is_terminated = true;
     
 	if(thread_pool.front()->id == 0) {
 		/* if its the main thread, still keep a reference to it
@@ -398,7 +398,7 @@ int pthread_join (pthread_t thread, void **value_ptr) {
     if (!locked_state)
         unlock();
     
-    bool locked_state = is_locked;
+    locked_state = is_locked;
     if (!locked_state)
         lock();
     bool condition = !thread_map[thread]->is_terminated;
@@ -408,7 +408,7 @@ int pthread_join (pthread_t thread, void **value_ptr) {
     while (condition) {
         raise (SIGALRM);
         
-        bool locked_state = is_locked;
+        locked_state = is_locked;
         if (!locked_state)
             lock();
         condition = !thread_map[thread]->is_terminated;
